@@ -7,9 +7,8 @@
     <a href="#-observações">📌 Observações</a>
 </p>
 <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; flex-wrap: wrap"  align="center">
-    <img width="500" style="border-radius: 5px" height="auto" alt="Página principal do pass.in" src=".github/home.png"/>
-
-    <img width="500" style="border-radius: 5px" height="auto" alt="Tela de splash" src=".github/splash.png"/>
+    <img width="200" height="500" style="border-radius: 5px" alt="Página principal do pass.in" src=".github/home.png"/>
+    <img width="200" height="500" style="border-radius: 5px" alt="Tela de splash" src=".github/splash.png"/>
 </div>
 
 
