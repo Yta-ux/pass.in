@@ -2,10 +2,12 @@ import { Button } from "@/components/button";
 import { colors } from "@/styles/colors";
 import { FontAwesome } from "@expo/vector-icons";
 import {
+  Alert,
   Image,
   ImageBackground,
   Modal,
   ScrollView,
+  Share,
   StatusBar,
   Text,
   TouchableOpacity,
@@ -16,11 +18,26 @@ import { Credential } from "@/components/credential";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { QRCode } from "@/components/qrcode";
+import { useBadgeStore } from "@/store/badge-store";
+import { Redirect, router } from "expo-router";
+import { MotiView } from "moti";
 
 export default function Ticket() {
-  const [imageUri, setImageUri] = useState<string>("");
   const [showQRCode, setShowQRCode] = useState<boolean>(false);
+  const badgeStore = useBadgeStore();
 
+  const handleShare = async () => {
+    try {
+      if (badgeStore.data?.checkInURL) {
+        await Share.share({
+          message: badgeStore.data.checkInURL,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Compartilhar", "Não foi possível compartilhar.");
+    }
+  };
   const handleAvatar = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -30,13 +47,17 @@ export default function Ticket() {
       });
 
       if (result.assets) {
-        setImageUri(result.assets[0].uri);
-        console.log(result.assets);
+        badgeStore.updateAvatar((result.assets[0].uri));
       }
     } catch (e) {
       console.log(e);
+      Alert.alert("Foto", "Não foi possível selecionar a imagem.")
     }
   };
+
+  if (!badgeStore.data?.checkInURL) {
+    return <Redirect href="/" />;
+  }
   return (
     <View className="flex-1 bg-green-500">
       <StatusBar barStyle="light-content" />
@@ -44,29 +65,48 @@ export default function Ticket() {
       <ScrollView
         className="-mt-28 -z-10"
         contentContainerClassName="px-8 pb-8"
+        showsVerticalScrollIndicator={false}
       >
         <Credential
-          imageUri={imageUri}
+          data={badgeStore.data}
           onChangeAvatar={handleAvatar}
           onShowQRCode={() => setShowQRCode(true)}
         />
-        <FontAwesome
-          name="angle-double-down"
-          color={colors.gray[300]}
-          size={24}
-          className="self-center my-6"
-        />
+        <MotiView
+          from={{
+            translateY: 0,
+          }}
+          animate={{
+            translateY: 10,
+          }}
+          transition={{
+            loop: true,
+            type: "timing",
+            duration: 700,
+          }}
+        >
+          <FontAwesome
+            name="angle-double-down"
+            color={colors.gray[300]}
+            size={24}
+            className="self-center my-6"
+          />
+        </MotiView>
 
         <Text className="text-2xl font-bold text-white mt-4">
           Compartilhar Credencial
         </Text>
         <Text className="font-regular text-white text-base mt-1 mb-6">
-          Mostre ao mundo que você vai participar do Unite Summit!
+          Mostre ao mundo que você vai participar do evento {badgeStore.data.eventTitle}!
         </Text>
 
-        <Button title="Compartilhar" />
+        <Button title="Compartilhar" onPress={() => handleShare()} />
 
-        <TouchableOpacity className="mt-10" activeOpacity={0.8}>
+        <TouchableOpacity
+          className="mt-10"
+          activeOpacity={0.8}
+          onPress={() => badgeStore.remove()}
+        >
           <Text className="text-base font-bold text-white text-center">
             Remover Ingresso
           </Text>
@@ -75,7 +115,10 @@ export default function Ticket() {
 
       <Modal visible={showQRCode} statusBarTranslucent>
         <View className="flex-1 bg-green-500 items-center justify-center">
-          <TouchableOpacity activeOpacity={0.8} onPress={() => setShowQRCode(false)}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => setShowQRCode(false)}
+          >
             <QRCode value="teste" size={200} />
             <Text className="text-sm font-bold text-center text-orange-500 mt-10">
               Fechar QRCode
