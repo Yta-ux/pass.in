@@ -1,11 +1,24 @@
 import { Input } from "@/components/input";
-import { View, Image, StatusBar } from "react-native";
+import { View, Image, StatusBar, Alert } from "react-native";
 import { FontAwesome6, MaterialIcons } from "@expo/vector-icons";
 import { colors } from "@/styles/colors";
 import { Button } from "@/components/button";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
+import { useState } from "react";
 
 export default function Register() {
+  const [user, setUser] = useState<{ name: string; email: string }>({
+    name: "",
+    email: "",
+  });
+
+  const handleSubscription = (value: { name: string; email: string }) => {
+    if(!value.name.trim().length || !value.email.trim()){
+      return Alert.alert("Erro", "Preencha todos os campos corretamente")
+    }
+
+    router.push("/ticket")
+  }
   return (
     <View className="bg-green-500 flex-1 justify-center items-center p-8">
       <StatusBar barStyle="light-content" />
@@ -22,7 +35,10 @@ export default function Register() {
             size={20}
             color={colors.green[200]}
           />
-          <Input.Field placeholder="Nome completo"></Input.Field>
+          <Input.Field
+            placeholder="Nome completo"
+            onChangeText={(value) => setUser({ ...user, name: value })}
+          />
         </Input>
         <Input>
           <MaterialIcons
@@ -30,11 +46,15 @@ export default function Register() {
             size={20}
             color={colors.green[200]}
           />
-          <Input.Field placeholder="E-mail" keyboardType="email-address" ></Input.Field>
+          <Input.Field
+            placeholder="E-mail"
+            keyboardType="email-address"
+            onChangeText={(value) => setUser({ ...user, email: value })}
+          />
         </Input>
       </View>
 
-      <Button title="realizar inscrição" onPress={() => console.log("Oi")} />
+      <Button title="realizar inscrição" onPress={() => handleSubscription(user)} />
 
       <Link href="/" className="text-base text-white mt-8 font-bold">
         Já possui ingresso?
